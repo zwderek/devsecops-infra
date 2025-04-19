@@ -1,0 +1,78 @@
+pipeline {
+    agent any
+
+    environment {
+        APP_IMAGE = "spring-petclinic:latest"
+        APP_CONTAINER = "spring-petclinic-prod"
+    }
+
+     triggers {
+        pollSCM('H/5 * * * *') // Poll SCM every 5 minutes
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git credentialsId: 'gitlab-creds',
+                    url: 'https://gitlab.com/group34214316/spring-petclinic.git',
+                    branch: 'main'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                echo "Building Spring Petclinic..."
+                sh './mvnw clean package -DskipTests'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo "Running Tests..."
+                sh './mvnw test -Dtest=!PostgresIntegrationTests'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                echo "Building Docker Image..."
+                script {
+                    writeFile file: 'Dockerfile', text: '''
+                        FROM openjdk:17-jdk-alpine
+                        VOLUME /tmp
+                        COPY target/*.jar app.jar
+                        ENTRYPOINT ["java", "-jar", "/app.jar"]
+                    '''
+                    sh "docker build -t ${APP_IMAGE} ."
+                }
+            }
+        }
+
+        stage('Deploy to Local Container') {
+            steps {
+                echo "Deploying to Local Container..."
+                script {
+                    sh """
+                        docker rm -f ${APP_CONTAINER} || true
+                        docker run -d --name ${APP_CONTAINER} \
+                            --network devsecops-net \
+                            -e SPRING_PROFILES_ACTIVE=mysql \
+                            -e MYSQL_URL=jdbc:mysql://mysql:3306/petclinic \
+                            -e MYSQL_USER=petclinic \
+                            -e MYSQL_PASS=petclinic \
+                            -p 80:8080 ${APP_IMAGE}
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Build and deployment complete. Application running on port 8081."
+        }
+        failure {
+            echo "Pipeline failed."
+        }
+    }
+}
