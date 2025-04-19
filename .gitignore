@@ -1,0 +1,6 @@
+*.log
+*.tmp
+*.jar
+__pycache__/
+.env
+docker-compose.override.yml
