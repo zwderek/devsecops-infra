@@ -59,7 +59,7 @@ services:
       - postgres
 
   owasp-zap:
-    image: owasp/zap2docker-stable
+    image: owasp/zap2docker-weekly
     container_name: owasp-zap
     entrypoint: [ "tail", "-f", "/dev/null" ]
     networks:
