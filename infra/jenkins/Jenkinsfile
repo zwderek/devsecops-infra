@@ -6,7 +6,7 @@ pipeline {
         APP_CONTAINER = "spring-petclinic-prod"
     }
 
-     triggers {
+    triggers {
         pollSCM('H/5 * * * *') // Poll SCM every 5 minutes
     }
 
@@ -48,9 +48,9 @@ pipeline {
             }
         }
 
-        stage('Deploy to Local Container') {
+        stage('Deploy to Local Container (Staging)') {
             steps {
-                echo "Deploying to Local Container..."
+                echo "Deploying to Local Container (Staging)..."
                 script {
                     sh """
                         docker rm -f ${APP_CONTAINER} || true
