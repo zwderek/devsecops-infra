@@ -1,7 +1,7 @@
 
 # DevSecOps Infrastructure Setup
 
-## Prerequisites: EC2 Instance Setup
+## Prerequisites: CICD VM (EC2 Instance) Setup
 
 Install Docker and Docker Compose:
 
@@ -25,7 +25,7 @@ docker network create devsecops-net
 
 ---
 
-## Launch Jenkins
+## Launch Jenkins in CICD VM
 
 Navigate to the Jenkins infrastructure directory:
 
@@ -78,7 +78,7 @@ docker exec -it jenkins cat /var/jenkins_home/secrets/initialAdminPassword
 
 ---
 
-## Prometheus Monitoring
+## Prometheus Setup
 
 Ensure the Jenkins Prometheus plugin is installed.
 
@@ -89,3 +89,9 @@ http://<EC2-Public-IP>:8080/prometheus
 ```
 
 This endpoint should expose Jenkins metrics consumable by Prometheus.
+
+## Grafana Setup
+
+## SonarQube Setup
+
+## OWASP ZAP Setup
