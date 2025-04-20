@@ -1,36 +1,91 @@
-# DevSecOps Infra
 
-### In EC2
+# DevSecOps Infrastructure Setup
+
+## Prerequisites: EC2 Instance Setup
+
+Install Docker and Docker Compose:
+
+```bash
 sudo apt update
 sudo apt install -y docker.io docker-compose
+```
 
+Enable Docker for the current user:
+
+```bash
 sudo usermod -aG docker $USER
 newgrp docker
+```
 
+Create a dedicated Docker network:
+
+```bash
 docker network create devsecops-net
+```
 
-### Run Junkins Container
+---
+
+## Launch Jenkins
+
+Navigate to the Jenkins infrastructure directory:
+
+```bash
 cd ~/devsecops-infra/infra
-
 docker compose up -d
+```
 
+Verify that the Jenkins container is running:
+
+```bash
 docker ps
+```
 
-Then check http://<EC2-Public-IP>:8080
+Access the Jenkins UI:
 
-Get PWD:
+```
+http://<EC2-Public-IP>:8080
+```
+
+Retrieve the initial admin password:
+
+```bash
 docker exec -it jenkins cat /var/jenkins_home/secrets/initialAdminPassword
-(ac43eeaa8f1d4ee4b711954faa0f2fad)
+```
 
-### In Junkins Web
+---
 
-Generate GitLab Access Token and Add to Junkins Credentials
+## Jenkins Web Configuration
 
-Create a New Job (spring-petclinic-pipeline):
-    Jenkins 首页 → 点击「新建作业」
-    输入名称：spring-petclinic-pipeline
-    类型选择：Pipeline
-    滚动到「Pipeline」配置部分：
-    Definition: Pipeline script
-    Script Path: 粘贴上面完整 Jenkinsfile 内容
-    保存并点击「立即构建」按钮（Build Now）
+1. Visit `http://<EC2-Public-IP>:8080`
+2. Log in using the initial admin password
+3. Install the recommended plugins
+4. Generate a GitLab **Personal Access Token**
+5. Add it to Jenkins:
+   - Go to **Manage Jenkins > Credentials**
+   - Add a new **Username with password** credential (your GitLab username and token)
+
+---
+
+## Create Pipeline Job (Spring PetClinic)
+
+1. Go to Jenkins Dashboard → **New Item**
+2. Enter name: `spring-petclinic-pipeline`
+3. Select **Pipeline**
+4. In the Pipeline section:
+   - **Definition**: Pipeline script
+   - **Script**: Paste your complete `Jenkinsfile`
+5. Save and click **Build Now**
+
+---
+
+## Prometheus Monitoring
+
+Ensure the Jenkins Prometheus plugin is installed.
+
+Visit the Prometheus metrics endpoint:
+
+```
+http://<EC2-Public-IP>:8080/prometheus
+```
+
+This endpoint should expose Jenkins metrics consumable by Prometheus.
