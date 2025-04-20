@@ -1,0 +1,83 @@
+- name: Deploy Spring Petclinic to production VM
+  hosts: web
+  become: true
+
+  vars_files:
+    - vars.yml
+
+  tasks:
+
+    # ----------- Install Java -----------
+    - name: Ensure Java is installed
+      apt:
+        name: openjdk-11-jdk
+        state: present
+        update_cache: yes
+
+    # ----------- Install MySQL -----------
+    - name: Ensure MySQL server is installed
+      apt:
+        name: mysql-server
+        state: present
+        update_cache: yes
+
+    - name: Ensure Python MySQL library is installed
+      apt:
+        name: python3-pymysql
+        state: present
+
+    # ----------- Create database and user -----------
+    - name: Ensure database '{{ db_name }}' exists
+      mysql_db:
+        name: "{{ db_name }}"
+        state: present
+
+    - name: Ensure MySQL user '{{ db_user }}' exists
+      mysql_user:
+        name: "{{ db_user }}"
+        password: "{{ db_pass }}"
+        priv: "{{ db_name }}.*:ALL"
+        host: localhost
+        state: present
+
+    # ----------- Kill existing app -----------
+    - name: Kill existing app process if running
+      shell: |
+        pgrep -f '{{ app_name }}.jar' | xargs --no-run-if-empty kill
+      ignore_errors: true
+
+    # ----------- Copy .jar file to VM -----------
+    - name: Copy .jar file to VM
+      copy:
+        src: "{{ jar_source_path }}"
+        dest: "{{ jar_dest_path }}"
+        mode: '0755'
+
+    # ----------- Start Spring Boot application -----------
+    - name: Start Spring Boot application with MySQL profile
+      shell: |
+        nohup java -jar {{ jar_dest_path }} \
+          --server.port={{ app_port }} \
+          --spring.profiles.active=mysql \
+          --spring.datasource.url=jdbc:mysql://localhost:3306/{{ db_name }} \
+          --spring.datasource.username={{ db_user }} \
+          --spring.datasource.password={{ db_pass }} \
+          > /home/ubuntu/app.log 2>&1 &
+      args:
+        executable: /bin/bash
+
+    # ----------- Wait for application to start -----------
+    - name: Wait for application to start on port {{ app_port }}
+      wait_for:
+        port: "{{ app_port }}"
+        delay: 5
+        timeout: 60
+
+    # ----------- Show log -----------
+    - name: Show last 10 lines of application log
+      shell: tail -n 10 /home/ubuntu/app.log
+      register: app_log
+
+    - name: Print application log
+      debug:
+        var: app_log.stdout_lines
