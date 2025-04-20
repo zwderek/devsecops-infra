@@ -31,6 +31,7 @@ Navigate to the Jenkins infrastructure directory:
 
 ```bash
 cd ~/devsecops-infra/infra
+docker-compose build jenkins
 docker compose up -d
 ```
 
