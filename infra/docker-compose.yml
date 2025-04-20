@@ -43,6 +43,28 @@ services:
     networks:
       - devsecops-net
 
+  sonarqube:
+    image: sonarqube:latest
+    container_name: sonarqube
+    ports:
+      - "9000:9000"
+    networks:
+      - devsecops-net
+    environment:
+      - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true
+      - SONAR_JDBC_URL=jdbc:postgresql://postgres:5432/petclinic
+      - SONAR_JDBC_USERNAME=petclinic
+      - SONAR_JDBC_PASSWORD=petclinic
+    depends_on:
+      - postgres
+
+  owasp-zap:
+    image: owasp/zap2docker-stable
+    container_name: owasp-zap
+    entrypoint: [ "tail", "-f", "/dev/null" ]
+    networks:
+      - devsecops-net
+
 networks:
   devsecops-net:
     external: true
