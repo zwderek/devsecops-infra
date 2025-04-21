@@ -1,7 +1,7 @@
 
 # DevSecOps Infrastructure Setup
 
-## Prerequisites: CICD VM (EC2 Instance) Setup
+## 1. Prerequisites: CICD VM (EC2 Instance) Setup
 
 Install Docker and Docker Compose:
 
@@ -25,7 +25,7 @@ docker network create devsecops-net
 
 ---
 
-## Launch Jenkins in CICD VM
+## 2. Launch Jenkins in CICD VM
 
 Navigate to the Jenkins infrastructure directory:
 
@@ -55,7 +55,7 @@ docker exec -it jenkins cat /var/jenkins_home/secrets/initialAdminPassword
 
 ---
 
-## Jenkins Web Configuration
+### 2.1 Jenkins Web Configuration
 
 1. Visit `http://<EC2-Public-IP>:8080`
 2. Log in using the initial admin password
@@ -67,7 +67,7 @@ docker exec -it jenkins cat /var/jenkins_home/secrets/initialAdminPassword
 
 ---
 
-## Create Pipeline Job (Spring PetClinic)
+### 2.2 Create Pipeline Job (Spring PetClinic)
 
 1. Go to Jenkins Dashboard → **New Item**
 2. Enter name: `spring-petclinic-pipeline`
@@ -79,7 +79,7 @@ docker exec -it jenkins cat /var/jenkins_home/secrets/initialAdminPassword
 
 ---
 
-## Prometheus Setup
+## 3. Prometheus Setup
 
 Ensure the Jenkins Prometheus plugin is installed.
 
@@ -91,11 +91,11 @@ http://<EC2-Public-IP>:8080/prometheus
 
 This endpoint should expose Jenkins metrics consumable by Prometheus.
 
-## Grafana Setup
+## 4. Grafana Setup
 
-## SonarQube Setup
+## 5. SonarQube Setup
 
-### Docker Setup
+### 5.1 Docker Setup
 
 Run:
 
@@ -107,7 +107,7 @@ Then visit: http://<EC2-Public-IP>:9000
 
 ---
 
-### First Login & Token Setup
+### 5.2 First Login & Token Setup
 
 1. Go to `http://<EC2-Public-IP>:9000`
 2. Login with default credentials:
@@ -120,15 +120,15 @@ Then visit: http://<EC2-Public-IP>:9000
 
 ---
 
-### Jenkins Configuration
+### 5.3 Jenkins Configuration
 
-#### Install Plugin
+#### 5.3.1 Install Plugin
 
 - Go to `Manage Jenkins → Plugins → Available`
 - Search for: `SonarQube Scanner`
 - Install and restart Jenkins
 
-#### Add SonarQube Server
+#### 5.3.2 Add SonarQube Server
 
 - Go to `Manage Jenkins → Configure System`
 - Find the **SonarQube servers** section
@@ -138,7 +138,7 @@ Then visit: http://<EC2-Public-IP>:9000
   - **Server URL**: `http://<EC2-Public-IP>:9000`
   - **Server authentication token**: Add the token you generated
 
-#### Add Scanner Tool
+#### 5.3.3 Add Scanner Tool
 
 - Go to `Manage Jenkins → Global Tool Configuration`
 - Find **SonarQube Scanner**
@@ -148,7 +148,7 @@ Then visit: http://<EC2-Public-IP>:9000
 
 ---
 
-### Update Jenkinsfile
+### 5.4 Update Jenkinsfile
  - Add SonarQube Analysis after Build and Test stage
   ```groovy
           stage('SonarQube Analysis') {
@@ -161,7 +161,7 @@ Then visit: http://<EC2-Public-IP>:9000
           }
   ```
 
-### View Results
+### 5.5 View Results
 
 - Go to http://<EC2-Public-IP>:9000
 - Click the project (e.g. `spring-petclinic`)
@@ -173,11 +173,11 @@ Then visit: http://<EC2-Public-IP>:9000
 
 ---
 
-## OWASP ZAP Setup
+## 6. OWASP ZAP Setup
 
 
 
-## Deployment VM Setup (Production VM)
+## 7. Deployment VM Setup (Production VM)
 
 Launch a new EC2 instance to act as the production (deployment target) VM. Recommended configuration:
 
