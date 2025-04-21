@@ -171,6 +171,62 @@ Then visit: http://<EC2-Public-IP>:9000
 
 ## 6. OWASP ZAP Setup
 
+### 6.1 Docker Setup
+
+Run:
+
+```bash
+docker-compose up -d
+```
+
+This starts ZAP in "idle" mode and allows Jenkins to `docker exec` into it.
+
+### 6.2 Update Jenkinsfile
+ - Add the following **stage** to your `Jenkinsfile` after deployment:
+  ```groovy
+    stage('OWASP ZAP Scan') {
+      steps {
+        echo "Running OWASP ZAP Scan..."
+        script {
+          sh '''
+            docker exec owasp-zap bash -c '
+              mkdir -p /zap/wrk &&           zap-baseline.py -t http://spring-petclinic-prod:8080 -r zap_report.html || true
+            '
+          '''
+          sh '''
+            mkdir -p zap
+            docker cp owasp-zap:/zap/wrk/zap_report.html zap/zap_report.html
+          '''
+        }
+      }
+    }
+  ```
+
+### 6.3 Post Section to Show Report in Jenkins UI
+
+```groovy
+  post {
+    success {
+      publishHTML([
+        reportDir: 'zap',
+        reportFiles: 'zap_report.html',
+        reportName: 'OWASP ZAP Report',
+        keepAll: true,
+        alwaysLinkToLastBuild: true,
+        allowMissing: true
+      ])
+    }
+  }
+```
+
+## 6.5 View the Report
+
+After a successful build, go to your Jenkins job → Click the **"OWASP ZAP Report"** link on the left sidebar to view scan results.
+
+## 6.6 Notes
+
+- Make sure `spring-petclinic-prod` container is accessible from ZAP (they should be on the same Docker network).
+- You **do not need to mount any volumes manually** since `docker cp` pulls the report out.
 
 ---
 
