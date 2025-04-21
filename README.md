@@ -96,3 +96,113 @@ This endpoint should expose Jenkins metrics consumable by Prometheus.
 ## SonarQube Setup
 
 ## OWASP ZAP Setup
+
+
+
+## Deployment VM Setup (Production VM)
+
+Launch a new EC2 instance to act as the production (deployment target) VM. Recommended configuration:
+
+- **AMI**: Ubuntu Server 24.04 LTS
+- **Instance Type**: `t3.small` or higher
+- **Storage**: 8–16 GB
+- **Security Group**:
+  - TCP port 22 (SSH)
+  - TCP port 8080 (Spring Boot app)
+- **Key Pair**: Use `.pem` file to enable SSH access
+
+## Ansible Deployment Pipeline
+
+- ### Step 1: Prepare Ansible Files
+
+  In the project root, ensure the following files exist under the `ansible/` directory:
+
+  ```
+  ansible/
+  ├── deploy.yml              # Main playbook to install dependencies and deploy the app
+  ├── vars.yml                # Variables such as DB credentials, ports, and paths
+  ├── inventory.ini           # Target VM host and SSH config
+  ├── labsuser.pem            # SSH private key to connect to the production VM
+  ```
+
+  Example `inventory.ini`:
+
+  ```
+  [web]
+  <EC2-Public-DNS> ansible_user=ubuntu ansible_ssh_private_key_file=/ansible/labsuser.pem ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+  ```
+
+  ------
+
+  ### Step 2: Share Built JAR from Jenkins
+
+  In `docker-compose.yml`, make sure Jenkins mounts the shared folder and ansible folder:
+
+  ```
+  volumes:
+    - ./shared:/shared
+    - ./ansible:/ansible
+  ```
+
+  In `Jenkinsfile`, export the built JAR:
+
+  ```
+  sh 'cp target/*.jar /shared/spring-petclinic.jar'
+  ```
+
+  ------
+
+  ### Step 3: Add Ansible Deployment Stage to Jenkinsfile
+
+  ```
+  stage('Deploy to VM with Ansible') {
+      steps {
+          sh 'ansible-playbook -i /ansible/inventory.ini /ansible/deploy.yml'
+      }
+  }
+  ```
+
+  ------
+
+  ### Step 4: Ansible `deploy.yml` Tasks Overview
+
+  The playbook `ansible/deploy.yml` performs the following actions on the target VM:
+
+  1. Installs Java 17 and MySQL
+  2. Initializes the MySQL root user with password authentication
+  3. Creates the `petclinic` database and user
+  4. Copies the built `.jar` file from controller to the target VM
+  5. Kills any existing app process
+  6. Starts the new app with `nohup java -jar` in the background
+  7. Waits for port `8080` to confirm the app is up
+
+  Example excerpt:
+
+  ```
+  - name: Ensure Java 17 is installed
+    apt:
+      name: openjdk-17-jdk
+      state: present
+      update_cache: yes
+  
+  - name: Copy .jar file to VM
+    copy:
+      src: "{{ jar_source_path }}"
+      dest: "{{ jar_dest_path }}"
+      mode: '0755'
+  
+  - name: Start application
+    shell: |
+      nohup java -jar {{ jar_dest_path }} --spring.profiles.active=mysql \
+        --spring.datasource.url=jdbc:mysql://localhost:3306/{{ db_name }} \
+        --spring.datasource.username={{ db_user }} \
+        --spring.datasource.password={{ db_pass }} > app.log 2>&1 &
+  ```
+
+  ------
+
+  ### Step 5: Verify Deployment
+
+  - Visit `http://<EC2-Public-IP>:8080`
+  - You should see the **Spring Petclinic** welcome page
+  - Make a code change in GitLab, commit & push — Jenkins will rebuild and redeploy automatically
