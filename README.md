@@ -7,6 +7,38 @@ Application artifacts are pulled from GitLab by Jenkins, built, tested, and anal
 
 ---
 
+## Project Structure
+
+```plaintext
+devsecops-infra/
+├── ansible/                         # Contains Ansible playbooks and inventory for deploying to the production VM
+│   ├── deploy.yml                   # Main Ansible playbook for deployment
+│   ├── inventory.ini                # Inventory file listing target production VMs
+│   └── vars.yml                     # Variables used in the Ansible playbook
+├── infra/                           # Contains configuration for infrastructure services
+│   ├── grafana/                     # Grafana configuration files
+│   │   ├── dashboards/              # Predefined dashboard JSON files
+│   │   └── provisioning/            # Provisioning config to auto-load dashboards and datasources
+│   ├── jenkins/                     # Jenkins Docker setup
+│   │   ├── .dockerignore            # Docker ignore file for Jenkins build
+│   │   ├── Dockerfile               # Jenkins Dockerfile with pre-installed plugins
+│   │   ├── Jenkinsfile              # CI/CD pipeline definition
+│   │   └── plugins.txt              # List of Jenkins plugins to install
+│   ├── prometheus/                  # Prometheus configuration
+│   │   └── prometheus.yml           # Prometheus scrape configuration
+│   └── sonar/                       # SonarQube configuration
+│       ├── data/                    # Persistent volume for SonarQube data
+│       ├── sonar-project.properties # SonarQube project properties file
+│       └── zap/                     # ZAP scan related scripts and reports
+├── docker-compose.yml              # Main docker-compose file to bring up the CI/CD environment
+├── screenshots/                    # Saved screenshots for documentation or reporting
+├── scripts/                        
+├── .gitignore                      
+└── README.md                       
+```
+
+---
+
 # DevSecOps Infrastructure Setup
 
 ## 1. Prerequisites: CICD VM (EC2 Instance) Setup
