@@ -4,6 +4,7 @@ pipeline {
     environment {
         APP_IMAGE = "spring-petclinic:latest"
         APP_CONTAINER = "spring-petclinic-prod"
+        SONARQUBE_ENV = "sonarqube"
     }
 
     triggers {
@@ -16,6 +17,15 @@ pipeline {
                 git credentialsId: 'gitlab-creds',
                     url: 'https://gitlab.com/group34214316/spring-petclinic.git',
                     branch: 'main'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                echo "Running SonarQube Analysis..."
+                withSonarQubeEnv("${SONARQUBE_ENV}") {
+                    sh './mvnw clean verify sonar:sonar -DskipTests'
+                }
             }
         }
 
@@ -66,6 +76,24 @@ pipeline {
             }
         }
 
+        stage('OWASP ZAP Scan') {
+            steps {
+                echo "Running OWASP ZAP Scan..."
+                script {
+                    sh """
+                        set +e
+                        docker run --rm \
+                            --user root \
+                            --network devsecops-net \
+                            -v ${env.WORKSPACE}:/zap/wrk:rw \
+                            ghcr.io/zaproxy/zaproxy:stable \
+                            zap-baseline.py -t http://${APP_CONTAINER}:8080 -r zap_report.html
+                        set -e
+                    """
+                }
+            }
+        }
+
         stage('Export Artifact') {
             steps {
                 sh 'mkdir -p /shared'
@@ -85,7 +113,15 @@ pipeline {
 
     post {
         success {
-            echo "Build and deployment complete. Application running on port 8081."
+            echo "Build and deployment complete. Application running on port 80."
+            publishHTML([
+                reportDir: '.',
+                reportFiles: 'zap_report.html',
+                reportName: 'OWASP ZAP Report',
+                keepAll: true,
+                alwaysLinkToLastBuild: true,
+                allowMissing: true
+            ])
         }
         failure {
             echo "Pipeline failed."
