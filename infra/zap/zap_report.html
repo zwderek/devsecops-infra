@@ -212,7 +212,7 @@ td {
 	</h2>
 
 	<h3>
-		Generated on Mon, 21 Apr 2025 22:21:56
+		Generated on Mon, 21 Apr 2025 23:14:21
 	</h3>
 
 	<h3>
@@ -343,7 +343,7 @@ td {
 			<tr>
 				<td><a href="#10021">X-Content-Type-Options Header Missing</a></td>
 				<td align="center" class="risk-1">Low</td>
-				<td align="center">11</td>
+				<td align="center">12</td>
 			</tr>
 			<tr>
 				<td><a href="#10027">Information Disclosure - Suspicious Comments</a></td>
@@ -1504,7 +1504,7 @@ td {
 					<tr>
 						<td width="20%"
 							class="indent1">URL</td>
-						<td width="80%"><a href="http://spring-petclinic-prod:8080/vets.html">http://spring-petclinic-prod:8080/vets.html</a></td>
+						<td width="80%"><a href="http://spring-petclinic-prod:8080/owners?lastName=ZAP">http://spring-petclinic-prod:8080/owners?lastName=ZAP</a></td>
 					</tr>
 					<tr>
 						<td width="20%"
@@ -1535,7 +1535,7 @@ td {
 					<tr>
 						<td width="20%"
 							class="indent1">URL</td>
-						<td width="80%"><a href="http://spring-petclinic-prod:8080/vets.html">http://spring-petclinic-prod:8080/vets.html</a></td>
+						<td width="80%"><a href="http://spring-petclinic-prod:8080/owners?lastName=ZAP">http://spring-petclinic-prod:8080/owners?lastName=ZAP</a></td>
 					</tr>
 					<tr>
 						<td width="20%"
@@ -3016,6 +3016,38 @@ At &quot;High&quot; threshold this scan rule will not alert on client or server 
 					<tr>
 						<td width="20%"
 							class="indent1">URL</td>
+						<td width="80%"><a href="http://spring-petclinic-prod:8080/owners?lastName=ZAP">http://spring-petclinic-prod:8080/owners?lastName=ZAP</a></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Method</td>
+						<td width="80%">GET</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Parameter</td>
+						<td width="80%">x-content-type-options</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Attack</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Evidence</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Other Info</td>
+						<td width="80%">This issue still applies to error type pages (401, 403, 500, etc.) as those pages are often still affected by injection issues, in which case there is still concern for browsers sniffing pages away from their actual content type.
+At &quot;High&quot; threshold this scan rule will not alert on client or server error responses.</td>
+					</tr>
+				
+					<tr>
+						<td width="20%"
+							class="indent1">URL</td>
 						<td width="80%"><a href="http://spring-petclinic-prod:8080/resources/css/petclinic.css">http://spring-petclinic-prod:8080/resources/css/petclinic.css</a></td>
 					</tr>
 					<tr>
@@ -3239,7 +3271,7 @@ At &quot;High&quot; threshold this scan rule will not alert on client or server 
 				
 				<tr>
 					<td width="20%">Instances</td>
-					<td width="80%">11</td>
+					<td width="80%">12</td>
 				</tr>
 				<tr>
 					<td width="20%">Solution</td>
