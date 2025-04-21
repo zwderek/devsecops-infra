@@ -53,8 +53,6 @@ Retrieve the initial admin password:
 docker exec -it jenkins cat /var/jenkins_home/secrets/initialAdminPassword
 ```
 
----
-
 ### 2.1 Jenkins Web Configuration
 
 1. Visit `http://<EC2-Public-IP>:8080`
@@ -64,8 +62,6 @@ docker exec -it jenkins cat /var/jenkins_home/secrets/initialAdminPassword
 5. Add it to Jenkins:
    - Go to **Manage Jenkins > Credentials**
    - Add a new **Username with password** credential (your GitLab username and token)
-
----
 
 ### 2.2 Create Pipeline Job (Spring PetClinic)
 
@@ -91,7 +87,11 @@ http://<EC2-Public-IP>:8080/prometheus
 
 This endpoint should expose Jenkins metrics consumable by Prometheus.
 
+---
+
 ## 4. Grafana Setup
+
+---
 
 ## 5. SonarQube Setup
 
@@ -105,7 +105,6 @@ docker-compose up -d
 
 Then visit: http://<EC2-Public-IP>:9000
 
----
 
 ### 5.2 First Login & Token Setup
 
@@ -118,7 +117,6 @@ Then visit: http://<EC2-Public-IP>:9000
 5. Generate a new token (e.g. `jenkins-token`)
 6. Copy the token. You'll need it in Jenkins.
 
----
 
 ### 5.3 Jenkins Configuration
 
@@ -145,8 +143,6 @@ Then visit: http://<EC2-Public-IP>:9000
 - Click `Add SonarQube Scanner`
 - Set a name (e.g. `SonarScanner`)
 - Select `Install automatically`
-
----
 
 ### 5.4 Update Jenkinsfile
  - Add SonarQube Analysis after Build and Test stage
@@ -176,6 +172,7 @@ Then visit: http://<EC2-Public-IP>:9000
 ## 6. OWASP ZAP Setup
 
 
+---
 
 ## 7. Deployment VM Setup (Production VM)
 
