@@ -76,7 +76,7 @@ pipeline {
         stage('Deploy to VM with Ansible') {
             steps {
                 echo "Deploying application to production VM..."
-                sh 'ansible-playbook -i ansible/inventory.ini ansible/deploy.yml'
+                sh 'ansible-playbook -i /ansible/inventory.ini /ansible/deploy.yml'
             }
         }
 
