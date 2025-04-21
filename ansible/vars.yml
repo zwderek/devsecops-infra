@@ -1,6 +1,6 @@
 app_name: spring-petclinic
 
-jar_source_path: /home/ubuntu/devsecops-infra/shared/spring-petclinic.jar
+jar_source_path: /shared/spring-petclinic.jar
 jar_dest_path: /home/ubuntu/spring-petclinic.jar
 
 app_port: 8080

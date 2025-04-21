@@ -10,7 +10,7 @@
     # ----------- Install Java -----------
     - name: Ensure Java is installed
       apt:
-        name: openjdk-11-jdk
+        name: openjdk-17-jdk
         state: present
         update_cache: yes
 
@@ -31,6 +31,8 @@
       mysql_db:
         name: "{{ db_name }}"
         state: present
+        login_user: root
+        login_password: root
 
     - name: Ensure MySQL user '{{ db_user }}' exists
       mysql_user:
@@ -39,6 +41,8 @@
         priv: "{{ db_name }}.*:ALL"
         host: localhost
         state: present
+        login_user: root
+        login_password: root
 
     # ----------- Kill existing app -----------
     - name: Kill existing app process if running
