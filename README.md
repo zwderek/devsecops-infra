@@ -1,3 +1,11 @@
+# Introdcution
+
+This project implements a complete DevSecOps pipeline for the **Spring Petclinic** application using Docker and modern DevOps tools. The pipeline integrates **continuous integration, delivery, security analysis, and monitoring**, all within a containerized setup. The primary CI/CD workflow is hosted on a **dedicated CI/CD Virtual Machine (VM)** that runs core services like Jenkins, GitLab (code source), SonarQube (for static code analysis), Prometheus and Grafana (for application monitoring), and OWASP ZAP (for dynamic security scanning).
+
+Application artifacts are pulled from GitLab by Jenkins, built, tested, and analyzed in containers, and then deployed using **Ansible** to a **separate production VM**. The production VM hosts the deployed application and simulates a real-world server environment. This setup ensures that the build and test stages are isolated, while deployments happen securely through infrastructure-as-code practices.
+
+
+---
 
 # DevSecOps Infrastructure Setup
 
