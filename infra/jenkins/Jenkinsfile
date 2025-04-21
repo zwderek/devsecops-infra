@@ -20,15 +20,6 @@ pipeline {
             }
         }
 
-        stage('SonarQube Analysis') {
-            steps {
-                echo "Running SonarQube Analysis..."
-                withSonarQubeEnv("${SONARQUBE_ENV}") {
-                    sh './mvnw clean verify sonar:sonar -DskipTests'
-                }
-            }
-        }
-
         stage('Build') {
             steps {
                 echo "Building Spring Petclinic..."
@@ -40,6 +31,15 @@ pipeline {
             steps {
                 echo "Running Tests..."
                 sh './mvnw test -Dtest=!PostgresIntegrationTests'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                echo "Running SonarQube Analysis..."
+                withSonarQubeEnv("${SONARQUBE_ENV}") {
+                    sh './mvnw sonar:sonar -Dsonar.projectKey=spring-petclinic'
+                }
             }
         }
 

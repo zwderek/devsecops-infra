@@ -31,7 +31,7 @@ Navigate to the Jenkins infrastructure directory:
 
 ```bash
 cd ~/devsecops-infra/infra
-docker-compose build jenkins
+docker compose build jenkins
 docker compose up -d
 ```
 
@@ -94,6 +94,84 @@ This endpoint should expose Jenkins metrics consumable by Prometheus.
 ## Grafana Setup
 
 ## SonarQube Setup
+
+### Docker Setup
+
+Run:
+
+```bash
+docker-compose up -d
+```
+
+Then visit: http://<EC2-Public-IP>:9000
+
+---
+
+### First Login & Token Setup
+
+1. Go to `http://<EC2-Public-IP>:9000`
+2. Login with default credentials:
+   - Username: `admin`
+   - Password: `admin`
+3. Change password when asked.
+4. Go to **My Account → Security**
+5. Generate a new token (e.g. `jenkins-token`)
+6. Copy the token. You'll need it in Jenkins.
+
+---
+
+### Jenkins Configuration
+
+#### Install Plugin
+
+- Go to `Manage Jenkins → Plugins → Available`
+- Search for: `SonarQube Scanner`
+- Install and restart Jenkins
+
+#### Add SonarQube Server
+
+- Go to `Manage Jenkins → Configure System`
+- Find the **SonarQube servers** section
+- Click `Add SonarQube`
+- Set:
+  - **Name**: `sonarqube`
+  - **Server URL**: `http://<EC2-Public-IP>:9000`
+  - **Server authentication token**: Add the token you generated
+
+#### Add Scanner Tool
+
+- Go to `Manage Jenkins → Global Tool Configuration`
+- Find **SonarQube Scanner**
+- Click `Add SonarQube Scanner`
+- Set a name (e.g. `SonarScanner`)
+- Select `Install automatically`
+
+---
+
+### Update Jenkinsfile
+ - Add SonarQube Analysis after Build and Test stage
+  ```groovy
+          stage('SonarQube Analysis') {
+              steps {
+                  echo "Running SonarQube Analysis..."
+                  withSonarQubeEnv("${SONARQUBE_ENV}") {
+                      sh './mvnw sonar:sonar -Dsonar.projectKey=spring-petclinic'
+                  }
+              }
+          }
+  ```
+
+### View Results
+
+- Go to http://<EC2-Public-IP>:9000
+- Click the project (e.g. `spring-petclinic`)
+- You'll see:
+  - Quality Gate (pass/fail)
+  - Bugs, vulnerabilities, and code smells
+  - Coverage (if configured)
+  - Duplications
+
+---
 
 ## OWASP ZAP Setup
 
