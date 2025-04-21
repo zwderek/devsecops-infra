@@ -105,6 +105,9 @@ services:
     entrypoint: [ "tail", "-f", "/dev/null" ]
     networks:
       - devsecops-net
+    volumes:
+      - ./zap:/zap/wrk 
+    working_dir: /zap/wrk
 
 networks:
   devsecops-net:

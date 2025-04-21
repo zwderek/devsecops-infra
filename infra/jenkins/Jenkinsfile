@@ -81,14 +81,14 @@ pipeline {
                 echo "Running OWASP ZAP Scan..."
                 script {
                     sh """
-                        set +e
-                        docker run --rm \
-                            --user root \
-                            --network devsecops-net \
-                            -v ${env.WORKSPACE}:/zap/wrk:rw \
-                            ghcr.io/zaproxy/zaproxy:stable \
-                            zap-baseline.py -t http://${APP_CONTAINER}:8080 -r zap_report.html
-                        set -e
+                        docker exec owasp-zap bash -c '
+                            cd /zap/wrk && \
+                            zap-baseline.py -t http://${APP_CONTAINER}:8080 -r zap_report.html || true
+                        '
+                    """
+                    sh """
+                        mkdir -p zap
+                        docker cp owasp-zap:/zap/wrk/zap_report.html zap/zap_report.html
                     """
                 }
             }
@@ -115,7 +115,7 @@ pipeline {
         success {
             echo "Build and deployment complete. Application running on port 80."
             publishHTML([
-                reportDir: '.',
+                reportDir: 'zap',
                 reportFiles: 'zap_report.html',
                 reportName: 'OWASP ZAP Report',
                 keepAll: true,
