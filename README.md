@@ -4,6 +4,17 @@ This project implements a complete DevSecOps pipeline for the **Spring Petclinic
 
 Application artifacts are pulled from GitLab by Jenkins, built, tested, and analyzed in containers, and then deployed using **Ansible** to a **separate production VM**. The production VM hosts the deployed application and simulates a real-world server environment. This setup ensures that the build and test stages are isolated, while deployments happen securely through infrastructure-as-code practices.
 
+---
+
+## Screenshots
+
+[screenshots folder](./screenshots/)
+
+---
+
+## Video Demo
+
+[demo video](./video_link.txt)
 
 ---
 
@@ -30,8 +41,9 @@ devsecops-infra/
 │       ├── data/                    # Persistent volume for SonarQube data
 │       ├── sonar-project.properties # SonarQube project properties file
 │       └── zap/                     # ZAP scan related scripts and reports
-├── docker-compose.yml              # Main docker-compose file to bring up the CI/CD environment
-├── screenshots/                    # Saved screenshots for documentation or reporting
+├── docker-compose.yml               # Main docker-compose file to bring up the CI/CD environment
+├── screenshots/                     # Saved screenshots for documentation or reporting
+├── video_link.txt                   # Demo Video
 ├── scripts/                        
 ├── .gitignore                      
 └── README.md                       
