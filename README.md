@@ -219,11 +219,11 @@ This starts ZAP in "idle" mode and allows Jenkins to `docker exec` into it.
   }
 ```
 
-## 6.5 View the Report
+### 6.5 View the Report
 
 After a successful build, go to your Jenkins job → Click the **"OWASP ZAP Report"** link on the left sidebar to view scan results.
 
-## 6.6 Notes
+### 6.6 Notes
 
 - Make sure `spring-petclinic-prod` container is accessible from ZAP (they should be on the same Docker network).
 - You **do not need to mount any volumes manually** since `docker cp` pulls the report out.
