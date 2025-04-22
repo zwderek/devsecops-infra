@@ -129,21 +129,147 @@ docker exec -it jenkins cat /var/jenkins_home/secrets/initialAdminPassword
 
 ## 3. Prometheus Setup
 
-Ensure the Jenkins Prometheus plugin is installed.
+Prometheus is responsible for collecting metrics from Jenkins and exposing them for monitoring.
 
-Visit the Prometheus metrics endpoint:
+### 3.1 Configuration
+
+Prometheus is configured using the file:
+
+```bash
+infra/prometheus/prometheus.yml
+```
+
+This file includes two scrape targets:
+
+```yaml
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'jenkins'
+    metrics_path: '/prometheus'
+    static_configs:
+      - targets: ['jenkins:8080']
+```
+
+### 3.2 Jenkins Integration
+
+- Ensure the **Prometheus plugin** is installed in Jenkins.
+- Once enabled, Jenkins will expose a `/prometheus` endpoint with metrics.
+- You can access this endpoint via:
 
 ```
 http://<EC2-Public-IP>:8080/prometheus
 ```
 
-This endpoint should expose Jenkins metrics consumable by Prometheus.
+### 3.3 Launch Prometheus
 
+Start Prometheus with Docker Compose:
+
+```bash
+docker-compose up -d prometheus
+```
+
+Verify that the Prometheus container is running:
+
+```bash
+docker ps
+```
+
+### 3.4 Access Prometheus UI
+
+Navigate to:
+
+```
+http://<EC2-Public-IP>:9090
+```
+
+We can explore collected metrics and try basic queries such as:
+
+```
+jenkins_job_total_duration
+jenkins_queue_size_value
+jenkins_executor_count_value
+```
+
+or check the health of endpoints at:
+
+```
+http://<EC2-Public-IP>:9090/targets
+```
 ---
 
 ## 4. Grafana Setup
 
----
+Grafana is used to visualize metrics collected by Prometheus through interactive dashboards.
+
+### 4.1 Configuration
+
+Grafana setup is located under:
+
+```bash
+infra/grafana/
+```
+
+It includes:
+
+- **Data source provisioning**  
+  `infra/grafana/provisioning/datasources/datasource.yml`  
+  This configures Prometheus as the default data source:
+
+  ```yaml
+  datasources:
+    - name: Prometheus
+      type: prometheus
+      access: proxy
+      url: http://prometheus:9090
+      isDefault: true
+  ```
+
+- **Dashboard provisioning**  
+  Dashboards are provisioned via:
+
+  ```bash
+  infra/grafana/provisioning/dashboards/dashboard.yml
+  ```
+
+  And corresponding dashboard JSON files are stored in:
+
+  ```bash
+  infra/grafana/dashboards/
+  ```
+
+  Including:
+
+  - `jenkins-dashboard.json`
+  - `sonarqube-dashboard.json`
+  - `application-dashboard.json`
+  - `devsecops-dashboard.json`
+
+### 4.2 Launch Grafana
+
+Start Grafana using Docker Compose:
+
+```bash
+docker-compose up -d grafana
+```
+
+Default login credentials:
+
+```
+Username: admin
+Password: admin
+```
+
+### 4.3 Access Grafana
+
+Visit:
+
+```
+http://<EC2-Public-IP>:3000/d/jenkins-metrics/
+http://<EC2-Public-IP>:3000/dashboards
+```
 
 ## 5. SonarQube Setup
 
