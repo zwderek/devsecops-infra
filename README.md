@@ -155,7 +155,7 @@ Run:
 docker-compose up -d
 ```
 
-Then visit: http://<EC2-Public-IP>:9000
+Then visit: `http://<EC2-Public-IP>:9000`
 
 
 ### 5.2 First Login & Token Setup
@@ -167,7 +167,7 @@ Then visit: http://<EC2-Public-IP>:9000
 3. Change password when asked.
 4. Go to **My Account → Security**
 5. Generate a new token (e.g. `jenkins-token`)
-6. Copy the token. You'll need it in Jenkins.
+6. Copy the token. We'll need it in Jenkins.
 
 
 ### 5.3 Jenkins Configuration
@@ -175,7 +175,7 @@ Then visit: http://<EC2-Public-IP>:9000
 #### 5.3.1 Install Plugin
 
 - Go to `Manage Jenkins → Plugins → Available`
-- Search for: `SonarQube Scanner`
+- Search for: `SonarQube Scanner` (https://plugins.jenkins.io/sonar/)
 - Install and restart Jenkins
 
 #### 5.3.2 Add SonarQube Server
@@ -186,7 +186,7 @@ Then visit: http://<EC2-Public-IP>:9000
 - Set:
   - **Name**: `sonarqube`
   - **Server URL**: `http://<EC2-Public-IP>:9000`
-  - **Server authentication token**: Add the token you generated
+  - **Server authentication token**: Add the token we generated
 
 #### 5.3.3 Add Scanner Tool
 
@@ -213,7 +213,7 @@ Then visit: http://<EC2-Public-IP>:9000
 
 - Go to http://<EC2-Public-IP>:9000
 - Click the project (e.g. `spring-petclinic`)
-- You'll see:
+- We'll see:
   - Quality Gate (pass/fail)
   - Bugs, vulnerabilities, and code smells
   - Coverage (if configured)
@@ -234,51 +234,57 @@ docker-compose up -d
 This starts ZAP in "idle" mode and allows Jenkins to `docker exec` into it.
 
 ### 6.2 Update Jenkinsfile
- - Add the following **stage** to your `Jenkinsfile` after deployment:
+ - Add the following **stage** to `Jenkinsfile` after deployment:
   ```groovy
     stage('OWASP ZAP Scan') {
-      steps {
-        echo "Running OWASP ZAP Scan..."
-        script {
-          sh '''
-            docker exec owasp-zap bash -c '
-              mkdir -p /zap/wrk &&           zap-baseline.py -t http://spring-petclinic-prod:8080 -r zap_report.html || true
-            '
-          '''
-          sh '''
-            mkdir -p zap
-            docker cp owasp-zap:/zap/wrk/zap_report.html zap/zap_report.html
-          '''
+            steps {
+                echo "Running OWASP ZAP Scan..."
+                script {
+                    sh """
+                        docker exec owasp-zap bash -c '
+                            cd /zap/wrk && \
+                            zap-baseline.py -t http://${APP_CONTAINER}:8080 -r zap_report.html || true
+                        '
+                    """
+                    sh """
+                        mkdir -p zap
+                        docker cp owasp-zap:/zap/wrk/zap_report.html zap/zap_report.html
+                    """
+                }
+            }
         }
-      }
-    }
   ```
+  - We should add this after Deploy to Local Container (Staging) Stage, Since we are testing our staging service
 
 ### 6.3 Post Section to Show Report in Jenkins UI
 
 ```groovy
-  post {
-    success {
-      publishHTML([
-        reportDir: 'zap',
-        reportFiles: 'zap_report.html',
-        reportName: 'OWASP ZAP Report',
-        keepAll: true,
-        alwaysLinkToLastBuild: true,
-        allowMissing: true
-      ])
+   post {
+        success {
+            echo "Build and deployment complete. Application running on port 80."
+            publishHTML([
+                reportDir: 'zap',
+                reportFiles: 'zap_report.html',
+                reportName: 'OWASP ZAP Report',
+                keepAll: true,
+                alwaysLinkToLastBuild: true,
+                allowMissing: true
+            ])
+        }
+        failure {
+            echo "Pipeline failed."
+        }
     }
-  }
 ```
 
 ### 6.5 View the Report
 
-After a successful build, go to your Jenkins job → Click the **"OWASP ZAP Report"** link on the left sidebar to view scan results.
+After a successful build, go to Jenkins job → Click the **"OWASP ZAP Report"** link on the left sidebar to view scan results.
 
 ### 6.6 Notes
 
 - Make sure `spring-petclinic-prod` container is accessible from ZAP (they should be on the same Docker network).
-- You **do not need to mount any volumes manually** since `docker cp` pulls the report out.
+- We **do not need to mount any volumes manually** since `docker cp` pulls the report out.
 
 ---
 
