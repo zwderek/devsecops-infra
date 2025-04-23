@@ -37,10 +37,9 @@ devsecops-infra/
 │   │   └── plugins.txt              # List of Jenkins plugins to install
 │   ├── prometheus/                  # Prometheus configuration
 │   │   └── prometheus.yml           # Prometheus scrape configuration
-│   └── sonar/                       # SonarQube configuration
-│       ├── data/                    # Persistent volume for SonarQube data
-│       ├── sonar-project.properties # SonarQube project properties file
-│       └── zap/                     # ZAP scan related scripts and reports
+│   ├── sonar/                       # SonarQube configuration
+│   │   └── data/                    # Persistent volume for SonarQube data
+│   └── zap/                         # ZAP scan related scripts and reports
 ├── docker-compose.yml               # Main docker-compose file to bring up the CI/CD environment
 ├── screenshots/                     # Saved screenshots for documentation or reporting
 ├── video_link.txt                   # Demo Video
