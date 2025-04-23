@@ -1,6 +1,6 @@
 # Introdcution
 
-This project implements a complete DevSecOps pipeline for the **Spring Petclinic** application using Docker and modern DevOps tools. The pipeline integrates **continuous integration, delivery, security analysis, and monitoring**, all within a containerized setup. The primary CI/CD workflow is hosted on a **dedicated CI/CD Virtual Machine (VM)** that runs core services like Jenkins, GitLab (code source), SonarQube (for static code analysis), Prometheus and Grafana (for application monitoring), and OWASP ZAP (for dynamic security scanning).
+This project implements a complete DevSecOps pipeline for the **Spring Petclinic** application using Docker and modern DevOps tools. The pipeline integrates **continuous integration, delivery, security analysis, and monitoring**, all within a containerized setup. The primary CI/CD workflow is hosted on a **dedicated CI/CD Virtual Machine (VM)** that runs core services like Jenkins, SonarQube (for static code analysis), Prometheus and Grafana (for application monitoring), and OWASP ZAP (for dynamic security scanning), and our staging service, and Ansible.
 
 Application artifacts are pulled from GitLab by Jenkins, built, tested, and analyzed in containers, and then deployed using **Ansible** to a **separate production VM**. The production VM hosts the deployed application and simulates a real-world server environment. This setup ensures that the build and test stages are isolated, while deployments happen securely through infrastructure-as-code practices.
 
@@ -54,11 +54,25 @@ devsecops-infra/
 
 ## 1. Prerequisites: CICD VM (EC2 Instance) Setup
 
+Launch a new EC2 instance to act as the CICD VM. Recommended configuration:
+
+- **AMI**: Ubuntu Server 24.04 LTS
+- **Instance Type**: `t3.large` or higher
+- **Storage**: 30 GB
+- **Security Group**:
+  - TCP port 22 (SSH)
+  - TCP port 8080 (Jenkins)
+  - TCP port 80 (Staging Spring Boot app)
+  - TCP port 9000 (SonarQube)
+  - TCP port 9090 (Prometheus)
+  - TCP port 3000 (Grafana)
+- **Key Pair**: Use `.pem` file to enable SSH access
+
 Install Docker and Docker Compose:
 
 ```bash
 sudo apt update
-sudo apt install -y docker.io docker-compose
+sudo apt install -y docker.io docker compose
 ```
 
 Enable Docker for the current user:
@@ -415,7 +429,7 @@ After a successful build, go to Jenkins job → Click the **"OWASP ZAP Report"**
 
 ## 7. Deployment VM Setup (Production VM)
 
-Launch a new EC2 instance to act as the production (deployment target) VM. Recommended configuration:
+Launch a new EC2 instance to act as the Production VM (deployment target). Recommended configuration:
 
 - **AMI**: Ubuntu Server 24.04 LTS
 - **Instance Type**: `t3.small` or higher
