@@ -537,8 +537,8 @@ Launch a new EC2 instance to act as the Production VM (deployment target). Recom
 
 ## 8. Advanced Automation Scripts
 
-To support advanced monitoring verification, we prepared additional scripts that enable automated health checks, monitoring configuration, and system verification. These include both shell scripts and an Ansible playbook to facilitate advanced automation.
-To support advanced monitoring automation, we include both an Ansible playbook and shell scripts for system verification, configuration checks, health validation, initiation and clear.
+We provide both an Ansible playbook and shell scripts designed for environment setup, verification, and troubleshooting.
+
 
 ### 8.1 Ansible Playbook for Monitoring
 
