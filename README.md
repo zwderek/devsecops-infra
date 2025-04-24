@@ -43,7 +43,7 @@ devsecops-infra/
 ├── docker-compose.yml               # Main docker-compose file to bring up the CI/CD environment
 ├── screenshots/                     # Saved screenshots for documentation or reporting
 ├── video_link.txt                   # Demo Video
-├── scripts/                        
+├── scripts/                         # Both shell scripts and an Ansible playbook to facilitate advanced automation
 ├── .gitignore                      
 └── README.md                       
 ```
@@ -268,13 +268,6 @@ Start Grafana using Docker Compose:
 docker-compose up -d grafana
 ```
 
-Default login credentials:
-
-```
-Username: admin
-Password: admin
-```
-
 ### 4.3 Access Grafana
 
 Visit:
@@ -282,6 +275,13 @@ Visit:
 ```
 http://<EC2-Public-IP>:3000/d/jenkins-metrics/
 http://<EC2-Public-IP>:3000/dashboards
+```
+
+Default login credentials:
+
+```
+Username: admin
+Password: admin
 ```
 
 ## 5. SonarQube Setup
@@ -534,3 +534,30 @@ Launch a new EC2 instance to act as the Production VM (deployment target). Recom
   - Visit `http://<EC2-Public-IP>:8080`
   - You should see the **Spring Petclinic** welcome page
   - Make a code change in GitLab, commit & push — Jenkins will rebuild and redeploy automatically
+
+## 8. Advanced Automation Scripts
+
+To support advanced monitoring verification, we prepared additional scripts that enable automated health checks, monitoring configuration, and system verification. These include both shell scripts and an Ansible playbook to facilitate advanced automation.
+To support advanced monitoring automation, we include both an Ansible playbook and shell scripts for system verification, configuration checks, health validation, initiation and clear.
+
+### 8.1 Ansible Playbook for Monitoring
+
+A dedicated Ansible playbook is located under the ansible/advanced/ directory to perform automated system checks and generate a report:
+
+```plaintext
+ansible/advanced/
+└── monitoring_automation.yml      # Performs full monitoring system checks and generates report
+```
+
+### 8.2 Scripts Directory
+
+The `scripts/` folder includes helper shell scripts for system verification, debugging, and maintenance:
+
+```plaintext
+scripts/
+├── run_monitoring_automation.sh   # Runs automated Ansible playbook to verify Prometheus, Grafana, Jenkins integration
+├── fix_monitoring_issues.sh       # Diagnoses and fixes common container and configuration issues
+├── cleanup-all.sh                 # Stops and removes all DevSecOps containers
+├── generate-report.sh             # Prints the generated monitoring status report
+├── init-docker-network.sh         # Creates Docker network if not already available
+```

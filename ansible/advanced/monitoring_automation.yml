@@ -1,0 +1,154 @@
+---
+- name: Automated Monitoring System Setup & Verification
+  hosts: localhost
+  connection: local
+  gather_facts: yes
+  tasks:
+    # 1. check existance of required files
+    - name: Verify required configuration files exist
+      stat:
+        path: "{{ playbook_dir }}/../../{{ item }}"
+      register: file_check
+      with_items:
+        - "infra/prometheus/prometheus.yml"
+        - "infra/grafana/provisioning/datasources/datasource.yml"
+        - "infra/grafana/provisioning/dashboards/dashboard.yml"
+        - "infra/grafana/dashboards/jenkins-dashboard.json"
+        - "infra/grafana/dashboards/devsecops-dashboard.json"
+        - "infra/grafana/dashboards/application-dashboard.json"
+        - "infra/grafana/dashboards/sonarqube-dashboard.json"
+      
+    - name: Report missing files
+      fail:
+        msg: "Required file {{ item.item }} is missing"
+      when: not item.stat.exists
+      with_items: "{{ file_check.results }}"
+      
+    # 2. make sure services are running
+    - name: Ensure monitoring services are running
+      shell: docker-compose -f "{{ playbook_dir }}/../../infra/docker-compose.yml" up -d prometheus grafana
+      args:
+        chdir: "{{ playbook_dir }}/../.."
+        
+    # 3. waiting for services to be available
+    - name: Wait for Prometheus to become available
+      uri:
+        url: http://localhost:9090/-/healthy
+        status_code: 200
+      register: result
+      until: result.status == 200
+      retries: 10
+      delay: 5
+      ignore_errors: yes
+      
+    - name: Wait for Grafana to become available
+      uri:
+        url: http://localhost:3000/api/health
+        status_code: 200
+      register: result
+      until: result.status == 200
+      retries: 10
+      delay: 5
+      ignore_errors: yes
+      
+    # 4. check Jenkins Prometheus plugin
+    - name: Verify Jenkins Prometheus plugin is working
+      uri:
+        url: http://localhost:8080/prometheus/
+        method: GET
+        user: admin
+        password: ac43eeaa8f1d4ee4b711954faa0f2fad
+        force_basic_auth: yes
+        status_code: 200
+      register: prometheus_plugin_check
+      ignore_errors: yes
+      
+    - name: Report Jenkins Prometheus plugin status
+      debug:
+        msg: >
+          {% if prometheus_plugin_check.status is defined and prometheus_plugin_check.status == 200 %}
+          Jenkins Prometheus plugin is working correctly
+          {% else %}
+          Jenkins Prometheus plugin may not be installed or configured properly
+          {% endif %}
+          
+    # 5. verify Jenkins data in Prometheus
+    - name: Check if Jenkins metrics are available in Prometheus
+      uri:
+        url: http://localhost:9090/api/v1/query
+        method: POST
+        body_format: form-urlencoded
+        body:
+          query: "up{job='jenkins'}"
+        return_content: yes
+      register: jenkins_metrics
+      ignore_errors: yes
+      
+    - name: Report Jenkins metrics availability
+      debug:
+        msg: >
+          {% if jenkins_metrics.json is defined and jenkins_metrics.json.data.result | length > 0 %}
+          Jenkins metrics are being collected by Prometheus
+          {% else %}
+          Jenkins metrics are NOT being collected by Prometheus
+          {% endif %}
+          
+    # 6. check Grafana dashboards
+    - name: Check Grafana dashboards
+      uri:
+        url: http://localhost:3000/api/search?query=
+        method: GET
+        user: admin
+        password: admin
+        force_basic_auth: yes
+        status_code: 200
+        return_content: yes
+      register: grafana_dashboards
+      ignore_errors: yes
+      
+    - name: Display available dashboards
+      debug:
+        msg: "Available dashboards: {{ grafana_dashboards.json | json_query('[*].title') }}"
+      when: grafana_dashboards.json is defined
+      
+    # 7. generate monitoring status report
+    - name: Generate monitoring status report
+      copy:
+        content: |
+          # Monitoring System Status Report
+          
+          Generated: {{ ansible_date_time.iso8601 }}
+          
+          ## Component Status
+          
+          | Component | Status | Details |
+          |-----------|--------|---------|
+          | Prometheus | {% if result.status is defined and result.status == 200 %}✅ Running{% else %}❌ Not Running{% endif %} | Health endpoint check |
+          | Grafana | {% if result.status is defined and result.status == 200 %}✅ Running{% else %}❌ Not Running{% endif %} | Health endpoint check |
+          | Jenkins Plugin | {% if prometheus_plugin_check.status is defined and prometheus_plugin_check.status == 200 %}✅ Working{% else %}❌ Issues Detected{% endif %} | Prometheus endpoint check |
+          | Metrics Collection | {% if jenkins_metrics.json is defined and jenkins_metrics.json.data.result | length > 0 %}✅ Working{% else %}❌ Issues Detected{% endif %} | Jenkins metrics in Prometheus |
+          
+          ## Available Dashboards
+          
+          {% if grafana_dashboards.json is defined %}
+          {% for dashboard in grafana_dashboards.json %}
+          - {{ dashboard.title }}
+          {% endfor %}
+          {% else %}
+          No dashboards found or Grafana not accessible
+          {% endif %}
+          
+          ## Recommendations
+          
+          {% if prometheus_plugin_check.status is not defined or prometheus_plugin_check.status != 200 %}
+          - Install Prometheus plugin in Jenkins via Manage Jenkins > Manage Plugins > Available
+          {% endif %}
+          
+          {% if jenkins_metrics.json is not defined or jenkins_metrics.json.data.result | length == 0 %}
+          - Check Prometheus configuration to ensure Jenkins endpoint is correctly defined
+          {% endif %}
+        dest: "{{ playbook_dir }}/../../monitoring_status_report.md"
+      
+    - name: Display report location
+      debug:
+        msg: "Status report has been generated at {{ playbook_dir }}/../../monitoring_status_report.md"
