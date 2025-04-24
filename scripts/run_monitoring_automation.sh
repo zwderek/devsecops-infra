@@ -19,7 +19,7 @@ else
 fi
 
 echo ""
-echo "📈 Access monitoring systems:"
+echo "Access monitoring systems:"
 echo "Prometheus: http://localhost:9090"
 echo "Grafana: http://localhost:3000 (admin/admin)"
 echo "Jenkins: http://localhost:8080 (admin/ac43eeaa8f1d4ee4b711954faa0f2fad)"
