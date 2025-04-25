@@ -11,5 +11,5 @@ if [ -f "$REPORT_PATH" ]; then
   echo "----------------------------------"
 else
   echo "Report not found. Run automation first:"
-  echo "   ./scripts/run_monitoring_automation.sh"
+  echo "./scripts/run_monitoring_automation.sh"
 fi

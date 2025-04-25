@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Stopping and removing all DevSecOps containers..."
+echo "Stopping and removing all DevSecOps containers"
 
 SERVICES=("jenkins" "prometheus" "grafana" "sonarqube" "owasp-zap")
 

@@ -6,7 +6,7 @@ echo "======================================"
 echo "Checking Prometheus container..."
 if ! docker ps | grep -q prometheus; then
     echo "Prometheus container is not running"
-    echo "Attempting to start Prometheus..."
+    echo "Starting Prometheus..."
     docker-compose -f infra/docker-compose.yml up -d prometheus
 else
     echo "Prometheus container is running"
@@ -15,7 +15,7 @@ fi
 echo "Checking Grafana container..."
 if ! docker ps | grep -q grafana; then
     echo "Grafana container is not running"
-    echo "Attempting to start Grafana..."
+    echo "Starting Grafana..."
     docker-compose -f infra/docker-compose.yml up -d grafana
 else
     echo "Grafana container is running"
@@ -24,7 +24,7 @@ fi
 echo "Checking Jenkins container..."
 if ! docker ps | grep -q jenkins; then
     echo "Jenkins container is not running"
-    echo "Attempting to start Jenkins..."
+    echo "Starting Jenkins..."
     docker-compose -f infra/docker-compose.yml up -d jenkins
 else
     echo "Jenkins container is running"
@@ -80,4 +80,4 @@ fi
 echo ""
 echo "Troubleshooting completed!"
 echo "We can now run the monitoring automation script to verify everything is working"
-echo "   ./scripts/run_monitoring_automation.sh"
+echo "./scripts/run_monitoring_automation.sh"
