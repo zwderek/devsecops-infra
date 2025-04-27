@@ -54,7 +54,8 @@ devsecops-infra/
 
 ## 1. Prerequisites: CICD VM (EC2 Instance) Setup
 
-Launch a new EC2 instance to act as the CICD VM. Note that in this project, we used AWS. 
+Launch a new EC2 instance to act as the CICD VM. Note that in this project, we used AWS.
+
 Recommended configuration:
 
 - **AMI**: Ubuntu Server 24.04 LTS
